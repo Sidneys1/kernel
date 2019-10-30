@@ -2,15 +2,29 @@
 #![cfg_attr(test, no_main)]
 #![feature(abi_x86_interrupt)]
 #![feature(custom_test_frameworks)]
+#![feature(alloc_error_handler)]
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
+extern crate alloc;
+
+pub mod allocator;
 pub mod gdt;
 pub mod interrupts;
+pub mod memory;
 pub mod serial;
 pub mod vga_buffer;
 
 use core::panic::PanicInfo;
+use linked_list_allocator::LockedHeap;
+
+#[alloc_error_handler]
+fn alloc_error_handler(layout: alloc::alloc::Layout) -> ! {
+	panic!("allocation error: {:?}", layout)
+}
+
+#[global_allocator]
+static ALLOCATOR: LockedHeap = LockedHeap::empty();
 
 pub fn init() {
 	gdt::init();
@@ -34,10 +48,15 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {
 	hlt_loop();
 }
 
+#[cfg(test)]
+use bootloader::{entry_point, BootInfo};
+
+#[cfg(test)]
+entry_point!(test_kernel_main);
+
 /// Entry point for `cargo xtest`
 #[cfg(test)]
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
+fn test_kernel_main() -> ! {
 	init();
 	test_main();
 	hlt_loop();
