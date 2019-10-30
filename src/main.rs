@@ -1,23 +1,23 @@
 #![no_std]
 #![no_main]
 #![feature(custom_test_frameworks)]
-#![test_runner(blog_os::test_runner)]
+#![test_runner(kernel::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
 extern crate alloc;
 
 use alloc::{boxed::Box, rc::Rc, vec, vec::Vec};
-use blog_os::println;
+use kernel::println;
 use bootloader::{entry_point, BootInfo};
 use core::panic::PanicInfo;
 
 entry_point!(kernel_main);
 
 fn kernel_main(boot_info: &'static BootInfo) -> ! {
-	use blog_os::allocator;
-	use blog_os::memory;
+	use kernel::allocator;
+	use kernel::memory;
 	use x86_64::VirtAddr;
-	blog_os::init();
+	kernel::init();
 
 	println!("Hello World{}", "!");
 
@@ -56,7 +56,7 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
 	test_main();
 
 	println!("It did not crash!");
-	blog_os::hlt_loop();
+	kernel::hlt_loop();
 }
 
 /// This function is called on panic.
@@ -64,11 +64,11 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
 	println!("{}", info);
-	blog_os::hlt_loop();
+	kernel::hlt_loop();
 }
 
 #[cfg(test)]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-	blog_os::test_panic_handler(info)
+	kernel::test_panic_handler(info)
 }

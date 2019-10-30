@@ -1,5 +1,5 @@
 [package]
-name = "blog_os"
+name = "kernel"
 version = "0.1.0"
 authors = ["Sidney Borne <bornes@ainfosec.com>"]
 edition = "2018"
