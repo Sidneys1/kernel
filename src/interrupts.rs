@@ -63,7 +63,13 @@ extern "x86-interrupt" fn page_fault_handler(
 }
 
 extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: &mut InterruptStackFrame) {
-	print!(".");
+	// print!(".");
+
+	use crate::rtc;
+	let time = rtc::get_system_time();
+	let mut hourly = time.hour;
+	let am_pm = if hourly >= 12 {hourly -= 12; "PM"} else {"AM"};
+	print!("\r{}/{}/{} {}:{}:{} {}", time.year, time.month, time.day, hourly, time.minute, time.second, am_pm);
 
 	unsafe {
 		PICS.lock()
